@@ -25,6 +25,10 @@
             border: none; border-radius: 50px; cursor: pointer; 
             box-shadow: 0 4px 15px rgba(224, 86, 253, 0.4); 
             transition: transform 0.2s; letter-spacing: 1px; text-transform: uppercase;
+            /* Ensure button is clickable */
+            pointer-events: auto;
+            position: relative;
+            z-index: 10000;
         }
         #start-btn:active { transform: scale(0.95); }
         .fade-out { opacity: 0; pointer-events: none; }
@@ -65,9 +69,9 @@
         }
         #player { flex-grow: 1; height: 50px; outline: none; }
 
-        /* --- FINAL BIG NEON SNAIL STYLES 🐌 --- */
+        /* --- BIG NEON SNAIL STYLES 🐌 --- */
         #btn-snail {
-            background: #111; /* Dark BG */
+            background: #111;
             border: 4px solid #ff0033; /* THICK NEON RED FRAME */
             border-radius: 15px;
             width: 80px; height: 60px; /* GIANT SIZE */
@@ -75,13 +79,11 @@
             cursor: pointer;
             display: flex; align-items: center; justify-content: center;
             transition: all 0.2s ease;
-            
-            /* NO DIMMING - ALWAYS BRIGHT */
             opacity: 1; 
             filter: none;
-            
-            /* Red Glow (Inactive) */
             box-shadow: 0 0 10px #ff0033, inset 0 0 5px rgba(255, 0, 51, 0.3);
+            /* Reset button defaults */
+            padding: 0; margin: 0; line-height: 1;
         }
         
         #btn-snail:hover {
@@ -91,14 +93,11 @@
 
         /* ACTIVE SNAIL (SLOW MODE - NEON GREEN) */
         #btn-snail.active {
-            border-color: #39ff14; /* Neon Green Frame */
-            background: #0a1f0a; /* Slight Green Tint BG */
-            
-            /* Green Glow */
+            border-color: #39ff14; 
+            background: #0a1f0a; 
             box-shadow: 0 0 20px #39ff14, inset 0 0 10px rgba(57, 255, 20, 0.4); 
             transform: scale(1.1);
         }
-        /* ----------------------------------- */
 
         /* CONTENT ZONES */
         #content-listen { padding: 20px; padding-top: 170px; max-width: 600px; margin: 0 auto; display: block; }
@@ -163,4 +162,43 @@
     </div>
 
     <div id="content-quiz">
-        <iframe src="https://animal-
+        <iframe src="https://animal-kingdom-easy.netlify.app/"></iframe>
+    </div>
+
+    <div id="modal" onclick="if(event.target.id === 'modal' || event.target.id === 'close-btn') closeModal()">
+        <img id="modal-img">
+        <div id="close-btn">Close Image</div>
+    </div>
+
+<script>
+    /* --- PRIORITY 1: START APP FUNCTION --- */
+    // Moved to top to guarantee it works even if other errors occur
+    window.startApp = function() {
+        var splash = document.getElementById('splash-screen');
+        if (splash) {
+            splash.classList.add('fade-out');
+            setTimeout(() => { splash.style.display = 'none'; }, 500);
+        } else {
+            console.error("Splash screen not found!");
+        }
+    }
+
+    /* --- SNAIL MODE LOGIC 🐌 --- */
+    let isSlowMode = false;
+
+    function toggleSnail() {
+        const player = document.getElementById('player');
+        const snailBtn = document.getElementById('btn-snail');
+        
+        isSlowMode = !isSlowMode; 
+
+        if (isSlowMode) {
+            if(player) player.playbackRate = 0.9; 
+            if(snailBtn) snailBtn.classList.add('active'); 
+        } else {
+            if(player) player.playbackRate = 1.0; 
+            if(snailBtn) snailBtn.classList.remove('active'); 
+        }
+    }
+
+    function switchTab(mode)
