@@ -7,8 +7,29 @@
     <style>
         /* BASE STYLES */
         body { font-family: -apple-system, sans-serif; background: #121212; color: #e0e0e0; margin: 0; padding: 0; overflow-x: hidden; }
+
+        /* SPLASH SCREEN (POSTER) STYLES */
+        #splash-screen { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            background: #181818; z-index: 9999; 
+            display: flex; flex-direction: column; align-items: center; justify-content: center; 
+            transition: opacity 0.5s ease-out; 
+        }
+        #splash-img { 
+            max-width: 95%; max-height: 80vh; border-radius: 12px; 
+            box-shadow: 0 0 25px rgba(0,0,0,0.7); margin-bottom: 25px; object-fit: contain; 
+        }
+        #start-btn { 
+            padding: 15px 50px; font-size: 20px; font-weight: 900; color: white; 
+            background: linear-gradient(135deg, #e056fd, #be4bdb); /* Purple for Animal Kingdom */
+            border: none; border-radius: 50px; cursor: pointer; 
+            box-shadow: 0 4px 15px rgba(224, 86, 253, 0.4); 
+            transition: transform 0.2s; letter-spacing: 1px; text-transform: uppercase;
+        }
+        #start-btn:active { transform: scale(0.95); }
+        .fade-out { opacity: 0; pointer-events: none; }
         
-        /* FIXED HEADER WITH TABS */
+        /* HEADER WITH TABS */
         #header-area {
             position: fixed; top: 0; left: 0; width: 100%; 
             background: #000; border-bottom: 2px solid #333; 
@@ -21,7 +42,7 @@
             margin: 10px 0; letter-spacing: 1px; text-transform: uppercase;
         }
 
-        /* TOGGLE SWITCH STYLE */
+        /* TABS */
         .toggle-container {
             display: flex; background: #1e1e1e; border-radius: 30px; 
             padding: 4px; border: 1px solid #333;
@@ -31,28 +52,24 @@
             font-size: 13px; font-weight: bold; cursor: pointer; 
             color: #888; background: transparent; transition: all 0.2s;
         }
-        .toggle-btn.active {
-            color: #000; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
-        }
-        #btn-listen.active { background: #4dabf7; } /* Blue for Listen */
-        #btn-quiz.active { background: #e056fd; }   /* Pink for Quiz */
+        .toggle-btn.active { color: #000; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+        #btn-listen.active { background: #4dabf7; } 
+        #btn-quiz.active { background: #e056fd; }   
 
-        /* CONTENT AREAS */
+        /* CONTENT ZONES */
         #content-listen { padding: 20px; padding-top: 130px; max-width: 600px; margin: 0 auto; display: block; }
         #content-quiz { display: none; width: 100%; height: 100vh; padding-top: 100px; box-sizing: border-box; }
         
         iframe { width: 100%; height: 100%; border: none; background: #121212; }
 
-        /* LISTENING APP STYLES */
+        /* LISTENING STYLES */
+        #audio-controls { width: 100%; display: flex; flex-direction: column; align-items: center; margin-top: 10px; }
         #now-playing { color: #4dabf7; font-size: 12px; margin-bottom: 5px; font-weight: bold; text-align: center; }
         #player { width: 90%; height: 35px; outline: none; margin-bottom: 5px; }
         .search { width: 100%; padding: 15px; font-size: 16px; border-radius: 12px; border: 1px solid #333; background: #1e1e1e; color: white; margin-bottom: 20px; box-sizing: border-box; }
         
         .card { background: #1e1e1e; padding: 15px; margin-bottom: 15px; border-radius: 12px; display: flex; align-items: center; gap: 15px; border: 1px solid #333; }
-        
-        /* ZOOM CURSOR */
         .img-container { text-align: center; flex-shrink: 0; cursor: zoom-in; }
-        
         .card img { width: 70px; height: 70px; border-radius: 50%; object-fit: cover; background: #333; border: 2px solid #555; }
         .info { flex-grow: 1; }
         .name { font-weight: bold; display: block; margin-bottom: 10px; font-size: 17px; text-transform: capitalize; color: #fff; }
@@ -65,29 +82,32 @@
         }
         
         /* COLORS */
-        .btn-uk { background: #d63031; } /* Red */
-        .btn-us { background: #0984e3; } /* Blue */
-        .btn-generic { background: #2f9e44; } /* Green */
-        .btn-male { background: #007AFF; } /* Fallback Blue */
-        .btn-female { background: #e056fd; } /* Fallback Pink */
+        .btn-uk { background: #d63031; } 
+        .btn-us { background: #0984e3; } 
+        .btn-generic { background: #2f9e44; } 
+        .btn-male { background: #007AFF; } 
+        .btn-female { background: #e056fd; } 
 
-        /* ZOOM MODAL */
-        #modal { display: none; position: fixed; z-index: 9999; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center; flex-direction: column; }
+        /* MODAL */
+        #modal { display: none; position: fixed; z-index: 9998; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.95); align-items: center; justify-content: center; flex-direction: column; }
         #modal img { max-width: 95%; max-height: 80vh; border-radius: 8px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
         #close-btn { color: white; font-size: 18px; margin-top: 20px; padding: 10px 30px; background: #333; border-radius: 30px; cursor: pointer; border: 1px solid #555; }
     </style>
 </head>
 <body>
 
+    <div id="splash-screen">
+        <img src="welcome-poster.png" alt="Çalışma Rehberi" id="splash-img" onerror="this.src='https://via.placeholder.com/400x600?text=Poster+Not+Found'">
+        <button id="start-btn" onclick="startApp()">BAŞLA 🦁</button>
+    </div>
+
     <div id="header-area">
         <div id="app-title">🦁 Animal Kingdom</div>
-        
         <div class="toggle-container">
             <button id="btn-listen" class="toggle-btn active" onclick="switchTab('listen')">🎧 Listen</button>
             <button id="btn-quiz" class="toggle-btn" onclick="switchTab('quiz')">🧠 Quiz</button>
         </div>
-
-        <div id="audio-controls" style="width:100%; display:flex; flex-direction:column; align-items:center; margin-top:10px;">
+        <div id="audio-controls">
             <div id="now-playing">Select a track</div>
             <audio id="player" controls controlsList="nodownload"></audio>
         </div>
@@ -109,12 +129,17 @@
     </div>
 
 <script>
-    /* --- TAB SWITCHING LOGIC --- */
+    /* --- SPLASH SCREEN FUNCTION --- */
+    function startApp() {
+        const splash = document.getElementById('splash-screen');
+        splash.classList.add('fade-out');
+        setTimeout(() => { splash.style.display = 'none'; }, 500);
+    }
+
     function switchTab(mode) {
         const listenContent = document.getElementById('content-listen');
         const quizContent = document.getElementById('content-quiz');
         const audioControls = document.getElementById('audio-controls');
-        
         const btnListen = document.getElementById('btn-listen');
         const btnQuiz = document.getElementById('btn-quiz');
 
@@ -133,12 +158,11 @@
         }
     }
 
-    /* --- GITHUB REPO LOGIC --- */
+    // AUTO-DETECT REPO NAME
+    const pathSegments = window.location.pathname.split('/');
+    const REPO = pathSegments[1] || "Animal-Kingdom-easy"; 
+    
     const USER = "dogierez01";
-    // ▼▼▼ YOUR ANIMAL KINGDOM REPO ▼▼▼
-    const REPO = "Animal-Kingdom-easy"; 
-    // ▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲▲
-
     const BRANCH = "main";
     const API_URL = `https://api.github.com/repos/${USER}/${REPO}/contents/`;
     const RAW_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/`;
@@ -153,16 +177,16 @@
     async function init() {
         try {
             const response = await fetch(API_URL);
-            if (!response.ok) throw new Error("Repo not found.");
+            if (!response.ok) throw new Error("Connection failed. Wait 1 min and Refresh.");
             
             const files = await response.json();
             let people = {};
 
             files.forEach(file => {
                 let name = file.name.toLowerCase();
-                if (name.includes(".html") || name.includes(".css") || name.startsWith(".")) return;
+                // EXCLUDE POSTER AND SYSTEM FILES
+                if (name.includes(".html") || name.includes(".css") || name.startsWith(".") || name === "welcome-poster.png") return;
 
-                // CLEANING
                 let baseName = name
                     .replace(/\.(mp3|wav|jpg|png|jpeg)$/, "") 
                     .replace(/ female| male| uk| us| bio/gi, "") 
@@ -190,7 +214,6 @@
     function render(items) {
         list.innerHTML = items.map(p => {
             p.audios.sort((a, b) => getSortScore(a) - getSortScore(b));
-            
             return `
             <div class="card">
                 <div class="img-container" onclick="openModal('${p.img ? RAW_URL + encodeURIComponent(p.img) : ''}')">
@@ -220,51 +243,21 @@
         let text = "Play";
         let css = "btn-generic"; 
 
-        // 1. DETERMINE COUNTRY (If exists)
         if (/(^|\W)uk(\W|$)/.test(lower)) { flag = "🇬🇧"; css = "btn-uk"; }
         else if (/(^|\W)us(\W|$)/.test(lower)) { flag = "🇺🇸"; css = "btn-us"; }
 
-        // 2. DETERMINE GENDER (If exists)
-        if (lower.includes("female")) {
-            text = "Female";
-            if (!flag) css = "btn-female"; // Fallback Pink
-        } 
-        else if (lower.includes("male")) {
-            text = "Male";
-            if (!flag) css = "btn-male"; // Fallback Blue
-        }
+        if (lower.includes("female")) { text = "Female"; if (!flag) css = "btn-female"; } 
+        else if (lower.includes("male")) { text = "Male"; if (!flag) css = "btn-male"; }
 
-        // 3. CREATE CONTENT
-        let content = "";
-        if (flag) {
-            // Big Flag Mode
-            content += `<span style="font-size: 3.0em; line-height: 0.8;">${flag}</span>`;
-            content += `<span>${text}</span>`;
-        } else {
-            // No Flag Mode (Standard Button)
-            content = text;
-        }
-
+        let content = flag ? `<span style="font-size: 3.0em; line-height: 0.8;">${flag}</span><span>${text}</span>` : text;
         return `<button class="play-btn ${css}" onclick="play('${filename}')">${content}</button>`;
     }
 
-    function openModal(src) { 
-        if(src && !src.includes("placeholder")) { 
-            modal.style.display = "flex"; 
-            modalImg.src = src; 
-        } 
-    }
+    function openModal(src) { if(src && !src.includes("placeholder")) { modal.style.display = "flex"; modalImg.src = src; } }
     function closeModal() { modal.style.display = "none"; }
-
-    function play(file) { 
-        player.src = RAW_URL + encodeURIComponent(file); 
-        player.play();
-        nowPlaying.innerText = file.replace(/_/g, " "); 
-    }
-    
+    function play(file) { player.src = RAW_URL + encodeURIComponent(file); player.play(); nowPlaying.innerText = file.replace(/_/g, " "); }
     function filter(q) { 
-        let cards = document.querySelectorAll('.card');
-        cards.forEach(c => c.style.display = c.innerText.toLowerCase().includes(q.toLowerCase()) ? 'flex' : 'none');
+        document.querySelectorAll('.card').forEach(c => c.style.display = c.innerText.toLowerCase().includes(q.toLowerCase()) ? 'flex' : 'none');
     }
     
     init();
