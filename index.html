@@ -8,11 +8,10 @@
     <script>
         function startApp() {
             var splash = document.getElementById('splash-screen');
-            // Force hide immediately
-            splash.style.opacity = '0';
-            setTimeout(function() {
-                splash.style.display = 'none';
-            }, 500);
+            if(splash) {
+                splash.style.opacity = '0';
+                setTimeout(function() { splash.style.display = 'none'; }, 500);
+            }
         }
     </script>
 
@@ -37,7 +36,7 @@
             border: none; border-radius: 50px; cursor: pointer; 
             box-shadow: 0 4px 15px rgba(224, 86, 253, 0.4); 
             transition: transform 0.2s; letter-spacing: 1px; text-transform: uppercase;
-            z-index: 10000; /* Ensure it sits on top */
+            pointer-events: auto; z-index: 10001;
         }
         #start-btn:active { transform: scale(0.95); }
         
@@ -153,52 +152,15 @@
     </div>
 
     <script>
-        // --- SNAIL LOGIC ---
-        let isSlowMode = false;
-        function toggleSnail() {
-            const player = document.getElementById('player');
-            const snailBtn = document.getElementById('btn-snail');
-            isSlowMode = !isSlowMode; 
-            if (isSlowMode) {
-                if(player) player.playbackRate = 0.9; 
-                if(snailBtn) snailBtn.classList.add('active'); 
-            } else {
-                if(player) player.playbackRate = 1.0; 
-                if(snailBtn) snailBtn.classList.remove('active'); 
-            }
-        }
-
-        // --- TABS ---
-        function switchTab(mode) {
-            const listenContent = document.getElementById('content-listen');
-            const quizContent = document.getElementById('content-quiz');
-            const audioControls = document.getElementById('audio-controls'); 
-            const btnListen = document.getElementById('btn-listen');
-            const btnQuiz = document.getElementById('btn-quiz');
-
-            if (mode === 'listen') {
-                listenContent.style.display = 'block';
-                quizContent.style.display = 'none';
-                audioControls.style.display = 'flex'; 
-                btnListen.classList.add('active');
-                btnQuiz.classList.remove('active');
-            } else {
-                listenContent.style.display = 'none';
-                quizContent.style.display = 'block';
-                audioControls.style.display = 'none'; 
-                btnListen.classList.remove('active');
-                btnQuiz.classList.add('active');
-            }
-        }
-
-        // --- GITHUB FETCH ---
-        const pathSegments = window.location.pathname.split('/');
-        const REPO = pathSegments[1] || "Animal-Kingdom-easy"; 
+        // 1. HARDCODED REPO DETAILS (Fail-Safe)
         const USER = "dogierez01";
+        const REPO = "Animal-Kingdom-easy"; 
         const BRANCH = "main";
+        
         const API_URL = `https://api.github.com/repos/${USER}/${REPO}/contents/`;
         const RAW_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/${BRANCH}/`;
 
+        // 2. DOM ELEMENTS
         const list = document.getElementById("list");
         const status = document.getElementById("status");
         const player = document.getElementById("player");
@@ -206,20 +168,33 @@
         const modal = document.getElementById("modal");
         const modalImg = document.getElementById("modal-img");
 
+        // 3. INIT FUNCTION
         async function init() {
             try {
+                // Fetch File List
                 const response = await fetch(API_URL);
-                if (!response.ok) throw new Error("Connection failed.");
+                if (!response.ok) throw new Error("Could not find files. Check Repo Name.");
+                
                 const files = await response.json();
                 let people = {};
 
+                // Process Files
                 files.forEach(file => {
                     let name = file.name.toLowerCase();
                     if (name.includes(".html") || name.includes(".css") || name.startsWith(".") || name === "welcome-poster.png") return;
-                    let baseName = name.replace(/\.(mp3|wav|jpg|png|jpeg)$/, "").replace(/ female| male| uk| us| bio/gi, "").trim();
+                    
+                    let baseName = name
+                        .replace(/\.(mp3|wav|jpg|png|jpeg)$/, "") 
+                        .replace(/ female| male| uk| us| bio/gi, "") 
+                        .trim();
+
                     if (!people[baseName]) people[baseName] = { name: baseName, audios: [], img: "" };
-                    if (name.includes(".wav") || name.includes(".mp3")) people[baseName].audios.push(file.name);
-                    else if (name.includes(".jpg") || name.includes(".png")) people[baseName].img = file.name;
+
+                    if (name.includes(".wav") || name.includes(".mp3")) {
+                        people[baseName].audios.push(file.name);
+                    } else if (name.includes(".jpg") || name.includes(".png")) {
+                        people[baseName].img = file.name;
+                    }
                 });
 
                 let sortedPeople = Object.values(people)
@@ -227,10 +202,16 @@
                     .sort((a, b) => a.name.localeCompare(b.name));
 
                 render(sortedPeople);
+                
+                // Hide Loading Status
                 if(status) status.style.display = 'none';
-            } catch (error) { if(status) status.innerText = "Error: " + error.message; }
+
+            } catch (error) { 
+                if(status) status.innerText = "Error: " + error.message; 
+            }
         }
 
+        // 4. RENDER FUNCTION
         function render(items) {
             list.innerHTML = items.map(p => {
                 p.audios.sort((a, b) => getSortScore(a) - getSortScore(b));
@@ -247,6 +228,7 @@
             }).join('');
         }
 
+        // 5. HELPER FUNCTIONS
         function getSortScore(filename) {
             let lower = filename.toLowerCase();
             if (/(^|\W)uk(\W|$)/.test(lower)) return 10;
@@ -269,6 +251,55 @@
         function openModal(src) { if(src && !src.includes("placeholder")) { modal.style.display = "flex"; modalImg.src = src; } }
         function closeModal() { modal.style.display = "none"; }
         
+        // 6. PLAYER LOGIC
+        let isSlowMode = false;
+        function toggleSnail() {
+            const btn = document.getElementById('btn-snail');
+            isSlowMode = !isSlowMode;
+            if(isSlowMode) {
+                if(player) player.playbackRate = 0.9;
+                btn.classList.add('active');
+            } else {
+                if(player) player.playbackRate = 1.0;
+                btn.classList.remove('active');
+            }
+        }
+
         function play(file) { 
             player.src = RAW_URL + encodeURIComponent(file); 
-            if (isSlowMode) { player.playbackRate = 0.9; } else { player.playback
+            player.playbackRate = isSlowMode ? 0.9 : 1.0;
+            player.play(); 
+            nowPlaying.innerText = file.replace(/_/g, " "); 
+        }
+
+        // 7. TAB LOGIC
+        function switchTab(mode) {
+            const listenContent = document.getElementById('content-listen');
+            const quizContent = document.getElementById('content-quiz');
+            const audioControls = document.getElementById('audio-controls'); 
+            const btnListen = document.getElementById('btn-listen');
+            const btnQuiz = document.getElementById('btn-quiz');
+
+            if (mode === 'listen') {
+                listenContent.style.display = 'block';
+                quizContent.style.display = 'none';
+                audioControls.style.display = 'flex'; 
+                btnListen.classList.add('active');
+                btnQuiz.classList.remove('active');
+            } else {
+                listenContent.style.display = 'none';
+                quizContent.style.display = 'block';
+                audioControls.style.display = 'none'; 
+                btnListen.classList.remove('active');
+                btnQuiz.classList.add('active');
+            }
+        }
+
+        function filter(q) { document.querySelectorAll('.card').forEach(c => c.style.display = c.innerText.toLowerCase().includes(q.toLowerCase()) ? 'flex' : 'none'); }
+
+        // 8. START THE ENGINE
+        init();
+
+    </script>
+</body>
+</html>
