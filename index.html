@@ -10,7 +10,7 @@
         /* 1. FRONT DOOR STYLES */
         #front-door { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #121212; z-index: 10001; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; cursor: pointer; transition: opacity 0.5s ease; }
         .neon-ring { width: 300px; height: 300px; border-radius: 50%; border: 4px solid #e056fd; box-shadow: 0 0 20px #e056fd; display: flex; align-items: center; justify-content: center; animation: pulse 2s infinite; }
-        .logo-img { width: 230px; height: 230px; border-radius: 50%; object-fit: cover; }
+        
         @keyframes pulse { 0% { transform: scale(1); opacity: 0.8; } 50% { transform: scale(1.02); opacity: 1; box-shadow: 0 0 30px #e056fd; } 100% { transform: scale(1); opacity: 0.8; } }
 
         /* 2. WELCOME SCREEN STYLES */
@@ -26,20 +26,23 @@
         
         #content-area { padding: 20px; padding-top: 140px; max-width: 600px; margin: 0 auto; }
         .card { background: #1e1e1e; padding: 15px; margin-bottom: 15px; border-radius: 12px; border: 1px solid #333; }
-        .card-title { font-size: 18px; font-weight: bold; color: #fff; margin-bottom: 10px; text-transform: capitalize; }
+        .card-title { font-size: 20px; font-weight: bold; color: #fff; margin-bottom: 12px; text-transform: capitalize; }
         
         #modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.95); z-index: 200; overflow-y: auto; }
-        #modal-content { padding: 20px; max-width: 600px; margin: 0 auto; padding-top: 60px; }
-        #close-btn { position: fixed; top: 20px; right: 20px; font-size: 30px; cursor: pointer; color: white; z-index: 300; background: #333; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #555; }
-        #story-title { font-size: 28px; color: #4dabf7; margin-bottom: 20px; text-align: center; font-weight: 900; text-transform: uppercase; }
-        #story-text { font-size: 16px; line-height: 1.6; color: #ccc; text-align: justify; margin-bottom: 30px; }
+        #modal-content { padding: 20px; max-width: 700px; margin: 0 auto; padding-top: 60px; padding-bottom: 40px; }
+        #close-btn { position: fixed; top: 20px; right: 20px; font-size: 30px; cursor: pointer; color: white; z-index: 300; background: #333; width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 1px solid #555; transition: background 0.2s; }
+        #close-btn:active { background: #555; }
+        #story-title { font-size: 32px; color: #4dabf7; margin-bottom: 25px; text-align: center; font-weight: 900; text-transform: uppercase; }
         
-        .quiz-q { background: #121212; padding: 15px; border-radius: 10px; margin-bottom: 20px; border-left: 4px solid #e056fd; }
-        .btn-tf { flex: 1; padding: 12px 20px; margin-top: 10px; border: none; border-radius: 8px; cursor: pointer; font-weight: 900; margin-right: 10px; transition: transform 0.1s; }
+        /* ENLARGED FONT SIZE FOR READING */
+        #story-text { font-size: 22px; line-height: 1.8; color: #e0e0e0; text-align: justify; margin-bottom: 30px; }
+        
+        .quiz-q { background: #121212; padding: 20px; border-radius: 10px; margin-bottom: 20px; border-left: 5px solid #e056fd; }
+        .btn-tf { flex: 1; padding: 15px 20px; margin-top: 15px; border: none; border-radius: 8px; cursor: pointer; font-weight: 900; font-size: 18px; margin-right: 10px; transition: transform 0.1s; }
         .btn-tf:active { transform: scale(0.95); }
         .btn-true { background: #2f9e44; color: white; } 
         .btn-false { background: #d63031; color: white; }
-        .feedback { margin-top: 15px; font-weight: bold; font-size: 18px; }
+        .feedback { margin-top: 15px; font-weight: bold; font-size: 20px; }
         
         #audio-bar { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
         #player { height: 40px; width: 70%; outline: none; }
@@ -65,7 +68,7 @@
 <div id="header-area">
     <div id="app-title">🦁 ANIMAL KINGDOM</div>
     <div>
-        <button id="btn-learn" class="toggle-btn active" onclick="setMode('learn')">📖 Read</button>
+        <button id="btn-learn" class="toggle-btn active" onclick="setMode('learn')">📖 Read & Listen</button>
         <button id="btn-quiz" class="toggle-btn" onclick="setMode('quiz')">🧠 Quiz</button>
     </div>
     <div id="audio-bar">
@@ -308,15 +311,15 @@
                     <div class="card" style="border-left:5px solid #4dabf7;">
                         <div class="card-title">${item.title}</div>
                         <div style="display:flex; gap:10px;">
-                            <button onclick="playAudioOnly(${i})" style="flex:1; padding:12px; background:#333; color:#fff; border:1px solid #555; border-radius:8px; cursor:pointer; font-weight:bold;">🔊 Listen</button>
-                            <button onclick="openReadMode(${i})" style="flex:1; padding:12px; background:#4dabf7; color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold;">📜 Read Story</button>
+                            <button onclick="playAudioOnly(${i}, 'female')" style="flex:1; padding:12px; background:#e056fd; color:#fff; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px;">👩 Listen</button>
+                            <button onclick="openReadMode(${i})" style="flex:1; padding:12px; background:#4dabf7; color:#000; border:none; border-radius:8px; cursor:pointer; font-weight:bold; font-size:16px;">📜 Read Story</button>
                         </div>
                     </div>`;
             } else {
                 return `
                     <div class="card" onclick="openQuizMode(${i})" style="cursor:pointer; border-left: 5px solid #e056fd;">
                         <div class="card-title">${item.title}</div>
-                        <div style="font-size:12px; color:#aaa; margin-top:5px;">Tap to start True/False Quiz 🧠</div>
+                        <div style="font-size:14px; color:#aaa; margin-top:5px;">Tap to start True/False Quiz 🧠</div>
                     </div>`;
             }
         }).join('');
@@ -333,20 +336,22 @@
         renderList();
     }
 
-    function playSmartAudio(title) {
+    function playSmartAudio(title, gender) {
         // Pointing to your Animal Kingdom repo
         const USER = "dogierez01"; 
         const REPO = "Animal-Kingdom-easy"; 
         const BASE_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/`;
         
-        // Ensure your audio files in the repo exactly match the titles + ".wav" (e.g., "aggressive monkeys.wav")
-        const fileName = encodeURIComponent(title.toLowerCase() + ".wav");
+        // Formats exactly to your file names, e.g., "Ant Sacrifice female.wav"
+        const fileName = encodeURIComponent(title + " " + gender + ".wav");
         player.src = BASE_URL + fileName;
         player.playbackRate = isSlowMode ? 0.8 : 1.0;
         player.play().catch(e => console.log("Audio file not found or browser blocked autoplay."));
     }
 
-    function playAudioOnly(i) { playSmartAudio(db[i].title); }
+    function playAudioOnly(i, gender) { 
+        playSmartAudio(db[i].title, gender); 
+    }
 
     function openReadMode(i) {
         const item = db[i];
@@ -354,8 +359,12 @@
         document.getElementById('story-title').innerText = item.title;
         document.getElementById('view-learn').style.display = 'block';
         document.getElementById('view-quiz').style.display = 'none';
-        document.getElementById('story-text').innerText = item.text;
-        playSmartAudio(item.title);
+        
+        // Set the text
+        document.getElementById('story-text').innerHTML = `<div>${item.text}</div>`;
+        
+        // Automatically play male voice when reading is opened
+        playSmartAudio(item.title, 'male');
     }
 
     function openQuizMode(i) {
@@ -367,7 +376,7 @@
         player.pause(); 
         document.getElementById('quiz-area').innerHTML = item.questions.map((q, idx) => `
             <div class="quiz-q">
-                <div style="font-weight:bold; margin-bottom:10px; font-size: 18px; line-height: 1.4;">Q: ${q.q}</div>
+                <div style="font-weight:bold; margin-bottom:15px; font-size: 20px; line-height: 1.4; color: #fff;">Q: ${q.q}</div>
                 <div style="display:flex; gap:10px;">
                     <button class="btn-tf btn-true" onclick="checkAnswer(this, ${q.a}, true)">TRUE</button>
                     <button class="btn-tf btn-false" onclick="checkAnswer(this, ${q.a}, false)">FALSE</button>
