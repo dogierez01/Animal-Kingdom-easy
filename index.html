@@ -41,7 +41,6 @@
         .btn-false { background: #d63031; color: white; }
         .feedback { margin-top: 15px; font-weight: bold; font-size: 20px; text-align: center; }
         
-        /* Master Next Button Style */
         #quiz-next-btn { display: none; width: 100%; margin-top: 30px; padding: 20px; background: #4dabf7; color: #000; border: none; border-radius: 8px; font-weight: 900; font-size: 20px; cursor: pointer; transition: background 0.2s; }
         #quiz-next-btn:active { background: #3b8bc6; }
 
@@ -95,7 +94,7 @@
     let currentMode = 'learn'; 
     let isSlowMode = false;
     let currentDataIndex = 0;
-    let questionsAnsweredInCurrentQuiz = 0; // Tracks questions answered per animal
+    let questionsAnsweredInCurrentQuiz = 0;
 
     // --- TRANSITION FUNCTION ---
     function startApp() {
@@ -107,6 +106,7 @@
     }
 
     // --- ANIMAL KINGDOM DATABASE (36 Animals, 6 Questions Each) ---
+    // Added 'audioPrefix' and 'audioExt' where filenames don't match the display title
     const db = [
         {
             title: "Aggressive Monkeys",
@@ -146,6 +146,7 @@
         },
         {
             title: "Boiling Frogs",
+            audioPrefix: "Boiling frogs",
             text: "In one experiment, scientists took twelve frogs and put them into a container of water that was 50° Celsius (very hot). As soon as the frogs felt the hot water, they jumped out immediately to save themselves. Next, the scientists took another twelve frogs and put them into warm water at 30° Celsius. The frogs swam around happily. However, the scientists slowly heated the water, increasing the temperature by 5° Celsius every half hour. After two hours, the water reached 50° Celsius, but none of the frogs jumped out, and they all died in the hot water. They could not feel the small, slow increase in the water's temperature.",
             questions: [ 
                 { q: "The frogs placed in 50° Celsius water stayed inside and died.", a: false },
@@ -182,6 +183,7 @@
         },
         {
             title: "Chaotic Seals and Organized Dolphins",
+            audioPrefix: "chaotic seals",
             text: "Seals and dolphins eat the same food and live in the same place, but they hunt differently. Seals live together but are selfish. When they see many fish, they jump in and try to catch as much as possible. This action makes the fish scatter, so the seals only catch a few. Dolphins usually live alone, but they work together perfectly to hunt. When they find fish, they swim in circles around them so the fish can't escape. The weak dolphins eat first. Then, they switch places with the circling dolphins so everyone gets their share. They continue this team effort until all the fish are eaten. If seals learned to work together like dolphins, they would catch much more food.",
             questions: [ 
                 { q: "Seals and dolphins live in different places and eat different food.", a: false },
@@ -194,6 +196,7 @@
         },
         {
             title: "Civil Engineer Beavers",
+            audioPrefix: "civil engineer beavers",
             text: "No animal is better for the environment than the beaver. They help nature in countless ways. Beavers have a good sense of size and distance, which helps them build dams (barriers across a river). They first calculate the area to find the best place for the dam. They work in groups: some collect rocks for the bottom of the dam, and others collect sticks and branches for the main structure. They use these dams to raise their young. They teach their babies to swim and hunt there. The dams also become a place for fish farming, so they don't have to travel far to find food. Because of these dams, many plants begin to grow, making the area greener.",
             questions: [ 
                 { q: "Beavers have a good sense of size and distance to help them build dams.", a: true },
@@ -218,6 +221,7 @@
         },
         {
             title: "Crab Mentality",
+            audioPrefix: "crab mentality",
             text: "Like people, crabs can also display behavior that suggests they are jealous of each other. If there is only one crab in a basket, it can easily climb out quickly and escape to freedom. However, when two or more crabs are present, they actively and repeatedly pull each other down whenever one attempts to climb toward the top. Instead of cooperating, their internal sabotage ensures none of them escape. This phenomenon is so reliable that fishers all over the world know this. They simply use uncovered baskets because they know the crabs will prevent one another from escaping. This self-defeating pattern gives rise to the human concept of the 'crab mentality,' where individuals attempt to undermine the success of others, often driven by envy.",
             questions: [ 
                 { q: "A single crab in a basket can easily climb out and escape.", a: true },
@@ -254,6 +258,7 @@
         },
         {
             title: "Eagle Reborn",
+            audioPrefix: "Eagle Reborn",
             text: "Eagles are different from other hunting birds because they can have a second life. When an eagle gets very old, it has two choices: to die, or to become reborn. The second choice is very hard and painful. The eagle flies to a high, lonely place. First, it hits its old, weak beak against a rock until the beak breaks. After a couple of days, it grows a new, strong beak. Then, it uses its new beak to pull out its old, worn-out feathers. Finally, it pulls out its weak, stiff talons (claws) with its new, strong beak. During this time, the eagle almost starves (dies of hunger). But after this process, it is ready to hunt and live for another 25 years.",
             questions: [ 
                 { q: "When an eagle gets very old, it has two choices: to die or be reborn.", a: true },
@@ -338,6 +343,7 @@
         },
         {
             title: "Hungry Sharks",
+            audioPrefix: "hungry sharks",
             text: "Scientists put a very hungry shark into a large tank. They put some small fish in the same tank. The shark quickly swam toward the small fish. But there was a problem: a clear plastic wall separated the shark from the fish. The shark kept attacking the fish but kept hitting its head on the wall. After two hours, it stopped trying and swam to its corner. Then, the scientists removed the wall. Even though the shark was still very hungry and there was no wall, it never tried to reach the fish again.",
             questions: [ 
                 { q: "Scientists separated a hungry shark and small fish using a clear plastic wall.", a: true },
@@ -362,6 +368,7 @@
         },
         {
             title: "Lazy Koalas",
+            audioPrefix: "lazy koalas",
             text: "Everyone thinks that koalas love to eat eucalyptus leaves, but that's not really true. They are actually very lazy animals. They don't like these leaves, but instead of trying to find better-tasting leaves, they choose to stay in the eucalyptus trees and eat them. The eucalyptus trees did not like these animals, so over time, they developed a natural defense system. The leaves became toxic (poisonous). But the koalas slowly got used to the poison and kept eating them. When the koalas got older, they started losing their teeth because of the toxic leaves. Eventually, they died of hunger because they couldn't bite the leaves anymore.",
             questions: [ 
                 { q: "Koalas actually love the taste of eucalyptus leaves more than any other food.", a: false },
@@ -398,6 +405,8 @@
         },
         {
             title: "Nasty Dolphins",
+            audioPrefix: "Nasty dolphins",
+            audioExt: ".mp3",
             text: "Most people think dolphins are nice animals. But actually, they can be cruel and mean. Unlike other animals, male dolphins sometimes have sex just for fun. They might chase female dolphins for up to 50 km and then force them to have sex. If a mother dolphin has a baby, she doesnt want sex because of her motherly feelings. If this happens, male dolphins sometimes catch and kill the baby dolphin. After that, they force the mother to have sex with them. Dolphins can also kill just for fun. They hunt the babies of sharks and kill them for no real reason.",
             questions: [ 
                 { q: "Dolphins are always nice and gentle animals.", a: false },
@@ -494,6 +503,7 @@
         },
         {
             title: "Trader Gorillas",
+            audioPrefix: "Trader gorillas",
             text: "There were four gorillas in separate cages in a room. Every morning, a keeper gave them tokens. In the afternoon, another keeper gave them cucumbers and took their tokens. One day, the first gorilla got grapes, but the other three still got cucumbers. The next day, the three gorillas refused to give their tokens for a cucumber. They only gave them for grapes. Finally, the keeper gave the first gorilla a banana, and the others got grapes. This time, they would not give their tokens for grapes. They demanded a banana for their tokens. They had learned to trade their tokens for better food.",
             questions: [ 
                 { q: "The keeper initially gave all four gorillas tokens every morning.", a: true },
@@ -579,19 +589,25 @@
         renderList();
     }
 
-    function playSmartAudio(title, gender) {
+    function playSmartAudio(index, gender) {
+        const item = db[index];
         const USER = "dogierez01"; 
         const REPO = "Animal-Kingdom-easy"; 
         const BASE_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/`;
         
-        const fileName = encodeURIComponent(title + " " + gender + ".wav");
+        // Grab the custom lowercase/exact name if we provided one, otherwise default to the display title
+        const baseName = item.audioPrefix ? item.audioPrefix : item.title;
+        // Grab the custom extension (like .mp3) if we provided one, otherwise default to .wav
+        const ext = item.audioExt ? item.audioExt : ".wav";
+        
+        const fileName = encodeURIComponent(baseName + " " + gender + ext);
         player.src = BASE_URL + fileName;
         player.playbackRate = isSlowMode ? 0.8 : 1.0;
-        player.play().catch(e => console.log("Audio file not found or browser blocked autoplay."));
+        player.play().catch(e => console.log("Audio file error: " + e));
     }
 
     function playAudioOnly(i, gender) { 
-        playSmartAudio(db[i].title, gender); 
+        playSmartAudio(i, gender); 
     }
 
     function openReadMode(i) {
@@ -603,22 +619,21 @@
         document.getElementById('view-quiz').style.display = 'none';
         
         document.getElementById('story-text').innerHTML = `<div>${item.text}</div>`;
-        playSmartAudio(item.title, 'male');
+        playSmartAudio(i, 'male');
     }
 
     function openQuizMode(i) {
         currentDataIndex = i;
-        questionsAnsweredInCurrentQuiz = 0; // Reset question counter
+        questionsAnsweredInCurrentQuiz = 0; 
         const item = db[i];
         
         modal.style.display = "block";
         document.getElementById('story-title').innerText = item.title + " Quiz";
         document.getElementById('view-learn').style.display = 'none';
         document.getElementById('view-quiz').style.display = 'block';
-        document.getElementById('quiz-next-btn').style.display = 'none'; // Hide next button initially
+        document.getElementById('quiz-next-btn').style.display = 'none'; 
         player.pause(); 
         
-        // Render all 6 questions
         document.getElementById('quiz-area').innerHTML = item.questions.map((q, idx) => `
             <div class="quiz-q">
                 <div style="font-weight:bold; margin-bottom:15px; font-size: 20px; line-height: 1.4; color: #fff;">Q${idx + 1}: ${q.q}</div>
@@ -640,14 +655,11 @@
             fb.innerHTML = "<span style='color: #ff0033;'>❌ WRONG!</span>"; 
         }
         
-        // Disable buttons after answering this specific question
         const buttons = quizBox.querySelectorAll('.btn-tf');
         buttons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'not-allowed'; });
         
-        // Track that a question was answered
         questionsAnsweredInCurrentQuiz++;
         
-        // If all 6 questions are answered, show the "Next Animal" button at the bottom
         if (questionsAnsweredInCurrentQuiz === db[currentDataIndex].questions.length) {
             document.getElementById('quiz-next-btn').style.display = "block";
         }
@@ -656,7 +668,6 @@
     function nextQuizQuestion() {
         if (currentDataIndex + 1 < db.length) {
             openQuizMode(currentDataIndex + 1);
-            // Scroll to top of modal for the new quiz
             document.getElementById('modal').scrollTop = 0;
         } else {
             document.getElementById('story-title').innerText = "Awesome Job!";
