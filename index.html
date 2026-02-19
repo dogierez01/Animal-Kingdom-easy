@@ -96,7 +96,6 @@
     let currentDataIndex = 0;
     let questionsAnsweredInCurrentQuiz = 0;
 
-    // --- TRANSITION FUNCTION ---
     function startApp() {
         const screen = document.getElementById('splash-screen');
         if(screen) {
@@ -106,7 +105,7 @@
     }
 
     // --- ANIMAL KINGDOM DATABASE (36 Animals, 6 Questions Each) ---
-    // Added 'audioPrefix' and 'audioExt' where filenames don't match the display title
+    // Note the audioPrefix and audioExt handling your exact file names
     const db = [
         {
             title: "Aggressive Monkeys",
@@ -504,6 +503,7 @@
         {
             title: "Trader Gorillas",
             audioPrefix: "Trader gorillas",
+            audioExt: ".mp3",
             text: "There were four gorillas in separate cages in a room. Every morning, a keeper gave them tokens. In the afternoon, another keeper gave them cucumbers and took their tokens. One day, the first gorilla got grapes, but the other three still got cucumbers. The next day, the three gorillas refused to give their tokens for a cucumber. They only gave them for grapes. Finally, the keeper gave the first gorilla a banana, and the others got grapes. This time, they would not give their tokens for grapes. They demanded a banana for their tokens. They had learned to trade their tokens for better food.",
             questions: [ 
                 { q: "The keeper initially gave all four gorillas tokens every morning.", a: true },
@@ -552,10 +552,6 @@
         }
     ];
 
-    // ============================================================
-    //   ANIMAL KINGDOM ENGINE
-    // ============================================================
-
     function renderList() {
         if (!list) return;
         list.innerHTML = db.map((item, i) => {
@@ -589,21 +585,38 @@
         renderList();
     }
 
+    // THE COMPLETELY REWRITTEN BULLETPROOF AUDIO ENGINE
     function playSmartAudio(index, gender) {
         const item = db[index];
         const USER = "dogierez01"; 
         const REPO = "Animal-Kingdom-easy"; 
         const BASE_URL = `https://raw.githubusercontent.com/${USER}/${REPO}/main/`;
         
-        // Grab the custom lowercase/exact name if we provided one, otherwise default to the display title
+        // 1. Grab the custom lowercase/exact name if we provided one, otherwise use standard Title
         const baseName = item.audioPrefix ? item.audioPrefix : item.title;
-        // Grab the custom extension (like .mp3) if we provided one, otherwise default to .wav
+        // 2. Grab custom extension if provided, otherwise default to .wav
         const ext = item.audioExt ? item.audioExt : ".wav";
         
-        const fileName = encodeURIComponent(baseName + " " + gender + ext);
-        player.src = BASE_URL + fileName;
+        const fileName = baseName + " " + gender + ext;
+        
+        player.src = BASE_URL + encodeURIComponent(fileName);
         player.playbackRate = isSlowMode ? 0.8 : 1.0;
-        player.play().catch(e => console.log("Audio file error: " + e));
+        
+        // AUTO-FALLBACK: If the file fails to play (e.g. because it's secretly an .mp3), swap the extension automatically!
+        player.onerror = function() {
+            console.log("GitHub couldn't find: " + fileName + " - Attempting fallback...");
+            if (fileName.endsWith('.wav')) {
+                player.src = BASE_URL + encodeURIComponent(fileName.replace('.wav', '.mp3'));
+                player.play().catch(e => {});
+                player.onerror = null; // Prevent infinite looping
+            } else if (fileName.endsWith('.mp3')) {
+                player.src = BASE_URL + encodeURIComponent(fileName.replace('.mp3', '.wav'));
+                player.play().catch(e => {});
+                player.onerror = null;
+            }
+        };
+
+        player.play().catch(e => console.log("Audio initializing..."));
     }
 
     function playAudioOnly(i, gender) { 
