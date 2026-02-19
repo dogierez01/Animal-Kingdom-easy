@@ -41,8 +41,9 @@
         .btn-false { background: #d63031; color: white; }
         .feedback { margin-top: 15px; font-weight: bold; font-size: 20px; text-align: center; }
         
-        .btn-next { display: none; width: 100%; margin-top: 20px; padding: 15px; background: #4dabf7; color: #000; border: none; border-radius: 8px; font-weight: 900; font-size: 18px; cursor: pointer; transition: background 0.2s; }
-        .btn-next:active { background: #3b8bc6; }
+        /* Master Next Button Style */
+        #quiz-next-btn { display: none; width: 100%; margin-top: 30px; padding: 20px; background: #4dabf7; color: #000; border: none; border-radius: 8px; font-weight: 900; font-size: 20px; cursor: pointer; transition: background 0.2s; }
+        #quiz-next-btn:active { background: #3b8bc6; }
 
         #audio-bar { display: flex; justify-content: center; align-items: center; gap: 10px; margin-top: 10px; }
         #player { height: 40px; width: 70%; outline: none; }
@@ -79,7 +80,10 @@
     <div id="modal-content">
         <div id="story-title"></div>
         <div id="view-learn"><div id="story-text"></div></div>
-        <div id="view-quiz" style="display:none;"><div id="quiz-area"></div></div>
+        <div id="view-quiz" style="display:none;">
+            <div id="quiz-area"></div>
+            <button id="quiz-next-btn" onclick="nextQuizQuestion()">Next Animal ➔</button>
+        </div>
     </div>
 </div>
 
@@ -91,6 +95,7 @@
     let currentMode = 'learn'; 
     let isSlowMode = false;
     let currentDataIndex = 0;
+    let questionsAnsweredInCurrentQuiz = 0; // Tracks questions answered per animal
 
     // --- TRANSITION FUNCTION ---
     function startApp() {
@@ -101,187 +106,439 @@
         }
     }
 
-    // --- ANIMAL KINGDOM DATABASE ---
+    // --- ANIMAL KINGDOM DATABASE (36 Animals, 6 Questions Each) ---
     const db = [
         {
             title: "Aggressive Monkeys",
             text: "Scientists studied how a group can become violent. They put five chimpanzees in a cage with bananas hanging up high. When one monkey tried to reach the bananas, cold water was sprayed on all of them. After this happened a few times, the monkeys learned that the bananas caused the irritating water. To stop the water, they all grouped together and beat up any monkey who tried to reach for the bananas. The scientists then replaced the original monkeys one by one. The new monkeys didn't know about the water, but whenever a new one tried for the bananas, the others immediately attacked it. Although the cold water was never used again after the first monkey was replaced, the violence continued. The monkeys kept beating each other simply because that was now the group's rule.",
-            questions: [ { q: "The new monkeys attacked those reaching for the bananas because they had experienced the cold water themselves.", a: false } ]
+            questions: [ 
+                { q: "The scientists placed five chimpanzees in a cage with bananas.", a: true },
+                { q: "Cold water was sprayed on the monkeys when they slept.", a: false },
+                { q: "The monkeys grouped together to beat up anyone reaching for bananas.", a: true },
+                { q: "The scientists replaced all the original monkeys at the same time.", a: false },
+                { q: "The new monkeys attacked those reaching for the bananas because they had experienced the cold water themselves.", a: false },
+                { q: "The violence continued even when the cold water was no longer used.", a: true }
+            ]
         },
         {
             title: "Ant Sacrifice",
             text: "When there is no food and ants are starting to die of hunger, one ant will sacrifice itself to save the colony. This ant is always the oldest and weakest one. Twenty young, strong \"warrior\" ants go with the sacrificing ant. When they find a tarantula (a poisonous spider), the warrior ants hide. The old ant walks towards the spider. The moment the tarantula sees the ant, it attacks and uses all of its poison to kill it. Once the spider has finished killing the ant, the warrior ants appear and attack the tarantula. They kill the spider, carry its body back to the colony, and eat it. Thanks to the oldest and weakest ant's sacrifice, the whole colony survives the food shortage.",
-            questions: [ { q: "The oldest and weakest ant is used to make the tarantula waste all of its poison.", a: true } ]
+            questions: [ 
+                { q: "When ants are starving, the youngest and strongest ant sacrifices itself.", a: false },
+                { q: "Twenty strong warrior ants accompany the sacrificing ant.", a: true },
+                { q: "The old ant walks toward a poisonous tarantula spider.", a: true },
+                { q: "The oldest and weakest ant is used to make the tarantula waste all of its poison.", a: true },
+                { q: "The warrior ants run away after the spider kills the old ant.", a: false },
+                { q: "The colony survives the food shortage by eating the dead spider.", a: true }
+            ]
         },
         {
             title: "Bee Democracy",
             text: "Some animals have a form of democracy (a system of voting). Honeybees are one of these animals. Although their leader is called a queen, honeybees have a completely democratic system in their hive. When the hive gets too full and they need to build a new one, the bees vote on the new location by dancing in the air. As soon as the new hive is built, they elect a new ruler. They usually have three or four choices and hold a democratic election. The candidate with the most followers becomes the queen, and all the bees accept her without arguing.",
-            questions: [ { q: "The new queen bee is chosen based on which candidate is the strongest fighter.", a: false } ]
+            questions: [ 
+                { q: "Honeybees use a democratic voting system to make decisions.", a: true },
+                { q: "The bees vote on a new hive location by singing loudly.", a: false },
+                { q: "The bees hold an election to choose their new ruler.", a: true },
+                { q: "The bees usually have ten to fifteen choices for the new queen.", a: false },
+                { q: "The new queen bee is chosen based on which candidate is the strongest fighter.", a: false },
+                { q: "All the bees accept the elected queen without arguing.", a: true }
+            ]
         },
         {
             title: "Boiling Frogs",
             text: "In one experiment, scientists took twelve frogs and put them into a container of water that was 50° Celsius (very hot). As soon as the frogs felt the hot water, they jumped out immediately to save themselves. Next, the scientists took another twelve frogs and put them into warm water at 30° Celsius. The frogs swam around happily. However, the scientists slowly heated the water, increasing the temperature by 5° Celsius every half hour. After two hours, the water reached 50° Celsius, but none of the frogs jumped out, and they all died in the hot water. They could not feel the small, slow increase in the water's temperature.",
-            questions: [ { q: "The frogs died because they could not detect the gradual change in the water's temperature.", a: true } ]
+            questions: [ 
+                { q: "The frogs placed in 50° Celsius water stayed inside and died.", a: false },
+                { q: "The frogs placed in warm 30° Celsius water swam around happily at first.", a: true },
+                { q: "Scientists increased the water temperature by 10° Celsius every hour.", a: false },
+                { q: "The water reached 50° Celsius after two hours.", a: true },
+                { q: "The frogs jumped out when the water finally became too hot.", a: false },
+                { q: "The frogs died because they could not detect the gradual change in the water's temperature.", a: true }
+            ]
         },
         {
             title: "Bullet-Eating Snakes",
             text: "Sometimes being the best at something isn't helpful. Snakes are a good example. A snake's reaction time (reflex) is extremely fast—only about 0.05 seconds. This makes them one of the quickest animals in nature. However, being so fast can actually cause them to die. Imagine a cowboy on a horse. A rattlesnake appears. The cowboy quickly pulls out his gun and shoots the snake in the head. You can think this is impossible, but here is the truth: a snake's reflex is faster than the bullet's speed. The snake sees the approaching bullet and thinks it is incoming prey. It quickly tries to bite the bullet. Because of this, the snake is killed when the bullet hits its head. If the snake had simply moved away from the cowboy, it would have lived. Instead of escaping, it tried to bite the bullet and died.",
-            questions: [ { q: "The snake dies because it tries to attack the bullet, believing it is food.", a: true } ]
+            questions: [ 
+                { q: "A snake has a very fast reaction time of about 0.05 seconds.", a: true },
+                { q: "A snake's reflex is slower than the speed of a bullet.", a: false },
+                { q: "When a cowboy shoots at a rattlesnake, the snake tries to bite the bullet.", a: true },
+                { q: "The snake dies because it tries to attack the bullet, believing it is food.", a: true },
+                { q: "The snake bites the bullet to protect its babies.", a: false },
+                { q: "The snake could have lived if it simply moved away from the cowboy.", a: true }
+            ]
         },
         {
             title: "Calculating Pumas",
             text: "Pumas, also known as mountain lions, have developed a special skill. Unlike other big cats, they have a part of their brain that calculates how much energy they use while chasing an animal. They use different amounts of energy for different types of animals. The same part of the brain also calculates how much energy the puma will obtain from the animal it catches. When a puma starts to chase a new animal, this part of the brain starts a countdown of the energy being used. When the count reaches zero, the puma stops right away. This is because the puma will not spend more energy than the food will provide to the puma.",
-            questions: [ { q: "A puma will continue chasing an animal even if the energy spent is more than the energy gained from eating it.", a: false } ]
+            questions: [ 
+                { q: "Pumas are also known as mountain lions.", a: true },
+                { q: "Pumas use the exact same amount of energy for every animal they chase.", a: false },
+                { q: "A specific part of their brain calculates how much energy they use and obtain.", a: true },
+                { q: "The puma's brain starts counting up the energy as it chases an animal.", a: false },
+                { q: "The puma stops right away when the energy countdown reaches zero.", a: true },
+                { q: "A puma will continue chasing an animal even if the energy spent is more than the energy gained from eating it.", a: false }
+            ]
         },
         {
             title: "Chaotic Seals and Organized Dolphins",
             text: "Seals and dolphins eat the same food and live in the same place, but they hunt differently. Seals live together but are selfish. When they see many fish, they jump in and try to catch as much as possible. This action makes the fish scatter, so the seals only catch a few. Dolphins usually live alone, but they work together perfectly to hunt. When they find fish, they swim in circles around them so the fish can't escape. The weak dolphins eat first. Then, they switch places with the circling dolphins so everyone gets their share. They continue this team effort until all the fish are eaten. If seals learned to work together like dolphins, they would catch much more food.",
-            questions: [ { q: "Seals catch fewer fish because their selfish behavior causes the fish to scatter.", a: true } ]
+            questions: [ 
+                { q: "Seals and dolphins live in different places and eat different food.", a: false },
+                { q: "Seals hunt together but act selfishly when they see fish.", a: true },
+                { q: "Seals catch fewer fish because their selfish behavior causes the fish to scatter.", a: true },
+                { q: "Dolphins usually live in large groups but hunt alone.", a: false },
+                { q: "Dolphins swim in circles around the fish so they cannot escape.", a: true },
+                { q: "The strongest dolphins always eat first during the team hunt.", a: false }
+            ]
         },
         {
             title: "Civil Engineer Beavers",
             text: "No animal is better for the environment than the beaver. They help nature in countless ways. Beavers have a good sense of size and distance, which helps them build dams (barriers across a river). They first calculate the area to find the best place for the dam. They work in groups: some collect rocks for the bottom of the dam, and others collect sticks and branches for the main structure. They use these dams to raise their young. They teach their babies to swim and hunt there. The dams also become a place for fish farming, so they don't have to travel far to find food. Because of these dams, many plants begin to grow, making the area greener.",
-            questions: [ { q: "Beavers build dams primarily to create a safe place to hide from predators.", a: false } ]
+            questions: [ 
+                { q: "Beavers have a good sense of size and distance to help them build dams.", a: true },
+                { q: "Beavers work completely alone when building their dams.", a: false },
+                { q: "Some beavers collect rocks while others collect sticks and branches.", a: true },
+                { q: "Beavers build dams primarily to create a safe place to hide from predators.", a: false },
+                { q: "The dams allow beavers to farm fish so they don't have to travel far for food.", a: true },
+                { q: "Beaver dams harm the environment by stopping plants from growing.", a: false }
+            ]
         },
         {
             title: "Clever Octopus",
             text: "The most intelligent animal on Earth is probably the octopus. Scientists tested a smart dog (golden retriever), a chimpanzee, and an octopus after they were starved. They gave them food inside a plastic bottle. The dog and the ape could not open the bottle and gave up after a few hours. However, the octopus managed to unscrew the cap of the bottle after half an hour and ate the food. The next time they gave the same bottle to the same octopus, it opened it in twenty seconds. Even more amazing, this octopus showed the other octopuses how to open the bottle. Soon, within three days, all the octopuses learned to open the bottle in under twenty seconds. Sadly, the average octopus only lives for three years. This is not enough time to build a civilization. If they lived longer, they might have started their own civilization in the sea.",
-            questions: [ { q: "The octopus kept its knowledge of how to open the bottle a secret from the other octopuses.", a: false } ]
+            questions: [ 
+                { q: "Scientists tested a dog, a chimpanzee, and an octopus to see who could open a bottle.", a: true },
+                { q: "The golden retriever successfully opened the plastic bottle.", a: false },
+                { q: "The octopus managed to unscrew the cap and eat the food after half an hour.", a: true },
+                { q: "The next time, the octopus opened the same bottle in twenty seconds.", a: true },
+                { q: "The octopus kept its knowledge of how to open the bottle a secret from the other octopuses.", a: false },
+                { q: "An average octopus lives for about twenty years.", a: false }
+            ]
         },
         {
             title: "Crab Mentality",
             text: "Like people, crabs can also display behavior that suggests they are jealous of each other. If there is only one crab in a basket, it can easily climb out quickly and escape to freedom. However, when two or more crabs are present, they actively and repeatedly pull each other down whenever one attempts to climb toward the top. Instead of cooperating, their internal sabotage ensures none of them escape. This phenomenon is so reliable that fishers all over the world know this. They simply use uncovered baskets because they know the crabs will prevent one another from escaping. This self-defeating pattern gives rise to the human concept of the 'crab mentality,' where individuals attempt to undermine the success of others, often driven by envy.",
-            questions: [ { q: "Fishers must put tight covers on baskets that contain multiple crabs so they don't escape.", a: false } ]
+            questions: [ 
+                { q: "A single crab in a basket can easily climb out and escape.", a: true },
+                { q: "When two or more crabs are in a basket, they help each other climb out.", a: false },
+                { q: "The crabs' internal sabotage ensures that none of them escape the basket.", a: true },
+                { q: "Fishers must put tight covers on baskets that contain multiple crabs so they don't escape.", a: false },
+                { q: "This self-defeating pattern is known as the 'crab mentality'.", a: true },
+                { q: "In human terms, crab mentality means trying to undermine the success of others due to envy.", a: true }
+            ]
         },
         {
             title: "Crows and Gravity",
             text: "Crows are some of the most intelligent animals in the world. Their favourite food is the walnut. But they cannot usually eat them because their beaks are not strong enough to open the hard shell. To solve this, they use the power of gravity. They take the walnut in their beak and drop it from the sky. When the walnut hits the ground, it breaks open, and the crow can eat it. Crows also teach this method to their young birds. Later, these young birds teach the trick to the next generation, showing them how to use gravity to break walnuts.",
-            questions: [ { q: "Crows teach their young how to drop walnuts from the sky to break them open.", a: true } ]
+            questions: [ 
+                { q: "Crows cannot usually eat walnuts because their beaks are not strong enough.", a: true },
+                { q: "Crows break open walnuts by hitting them with small rocks.", a: false },
+                { q: "Crows use the power of gravity to break the hard walnut shells.", a: true },
+                { q: "Crows teach their young how to drop walnuts from the sky to break them open.", a: true },
+                { q: "Only the adult crows know this trick; young birds cannot learn it.", a: false },
+                { q: "The young birds eventually pass the trick on to the next generation.", a: true }
+            ]
         },
         {
             title: "Dogs in the Subway",
             text: "There are about 35,000 stray dogs (dogs without homes) in Moscow. Most of them live outside the city center, but there isn't enough food there. That's why they take the subway train to the city center. They have learned the train lines and times. In the morning, they take the train downtown with the people. They find food in Moscow, and in the evening, they take the correct train back to the suburbs. Most people are friendly to the dogs. The dogs have learned not to bother the passengers. They lie down between the seats and do not bark, so no one complains about these animal passengers.",
-            questions: [ { q: "The subway dogs in Moscow have learned how to behave quietly so that human passengers do not complain about them.", a: true } ]
+            questions: [ 
+                { q: "There are about 35,000 stray dogs living in the center of Moscow.", a: false },
+                { q: "The stray dogs take the subway train to the city center to find food.", a: true },
+                { q: "The dogs only take the trains at night when no people are around.", a: false },
+                { q: "The dogs remember to take the correct train back to the suburbs in the evening.", a: true },
+                { q: "The subway dogs in Moscow have learned how to behave quietly so that human passengers do not complain about them.", a: true },
+                { q: "The dogs bark loudly at passengers to get extra food on the train.", a: false }
+            ]
         },
         {
             title: "Eagle Reborn",
             text: "Eagles are different from other hunting birds because they can have a second life. When an eagle gets very old, it has two choices: to die, or to become reborn. The second choice is very hard and painful. The eagle flies to a high, lonely place. First, it hits its old, weak beak against a rock until the beak breaks. After a couple of days, it grows a new, strong beak. Then, it uses its new beak to pull out its old, worn-out feathers. Finally, it pulls out its weak, stiff talons (claws) with its new, strong beak. During this time, the eagle almost starves (dies of hunger). But after this process, it is ready to hunt and live for another 25 years.",
-            questions: [ { q: "During its rebirth process, an eagle breaks its own beak against a rock to grow a new one.", a: true } ]
+            questions: [ 
+                { q: "When an eagle gets very old, it has two choices: to die or be reborn.", a: true },
+                { q: "During its rebirth process, an eagle breaks its own beak against a rock to grow a new one.", a: true },
+                { q: "The eagle uses its new beak to pull out its old, worn-out feathers.", a: true },
+                { q: "The eagle pulls out its talons (claws) before breaking its beak.", a: false },
+                { q: "The eagle eats a lot of food during this rebirth process to stay strong.", a: false },
+                { q: "After the rebirth process, the eagle is ready to live for another 25 years.", a: true }
+            ]
         },
         {
             title: "Empathic Mouse",
             text: "Scientists discovered that mice can feel empathy (understanding and sharing the feelings of others), much like humans. In an experiment, one mouse was put in a small cage and was made to be very hungry. A second mouse was then put into the same room. The second mouse started trying to help, and finally managed to open the door and release the hungry, caged mouse. The next day, the scientists repeated the test. They put a different hungry mouse in the cage, but they added the first mouse—the one that had been trapped before—to the room. The first mouse immediately ran to the cage and set the new mouse free. It seemed to do this because it remembered the feeling of being captive and felt sorry for the mouse inside the cage.",
-            questions: [ { q: "The first mouse freed the new mouse because it remembered the feeling of being trapped.", a: true } ]
+            questions: [ 
+                { q: "Scientists discovered that mice can feel empathy just like humans.", a: true },
+                { q: "In the first test, a mouse successfully opened the door to free a hungry, caged mouse.", a: true },
+                { q: "The next day, scientists put the exact same hungry mouse back in the cage.", a: false },
+                { q: "The first mouse freed the new mouse because it remembered the feeling of being trapped.", a: true },
+                { q: "The first mouse ignored the new trapped mouse on the second day.", a: false },
+                { q: "The experiment showed that mice feel sorry for others in captivity.", a: true }
+            ]
         },
         {
             title: "Fearful Mice",
             text: "In reality, mice don’t fear cats from birth. They learn this fear from each other, and the fear spreads. In other words, fear is contagious. Scientists put an aggressive, adult cat in a glass box and a laboratory mouse in a separate glass box. When the curtain between them was opened, the cat tried to attack the mouse. The laboratory mouse showed no fear because it had never seen a cat before. Two hours later, they put a street mouse next to the lab mouse and opened the curtain again. The cat tried to catch the mice, and the street mouse quickly ran away. Soon, the laboratory mouse also started running away from the cat because it learned from the other mouse that it should fear the cat.",
-            questions: [ { q: "Mice are born with a natural, instinctual fear of cats.", a: false } ]
+            questions: [ 
+                { q: "Mice are born with a natural, instinctual fear of cats.", a: false },
+                { q: "A laboratory mouse showed no fear when it saw an aggressive cat for the first time.", a: true },
+                { q: "Scientists placed a street mouse next to the laboratory mouse in a glass box.", a: true },
+                { q: "The street mouse tried to attack the cat when the curtain was opened.", a: false },
+                { q: "Fear spreads among mice because they learn it from each other.", a: true },
+                { q: "The laboratory mouse started running from the cat because it learned the fear from the street mouse.", a: true }
+            ]
         },
         {
             title: "Foster Child Squirrels",
             text: "Some animals live in groups, and some live alone. Squirrels are solitary animals, which means they usually live by themselves. Normally, animals that live alone don't let other animals join their family. But Canadian squirrels are different. Female Canadian squirrels will take care of baby squirrels that have lost their parents. They adopt them. The male squirrels aren't happy about this, but the females usually persuade their partners. The orphaned babies never forget this help! They collect extra nuts for their foster mother as a way to say thank you.",
-            questions: [ { q: "Male Canadian squirrels eagerly encourage adopting orphaned baby squirrels.", a: false } ]
+            questions: [ 
+                { q: "Squirrels are solitary animals, which means they usually live by themselves.", a: true },
+                { q: "Female Canadian squirrels refuse to take care of orphaned baby squirrels.", a: false },
+                { q: "Male Canadian squirrels eagerly encourage adopting orphaned baby squirrels.", a: false },
+                { q: "Female squirrels usually persuade their male partners to accept the adoption.", a: true },
+                { q: "The adopted baby squirrels completely forget their foster mother when they grow up.", a: false },
+                { q: "The adopted babies collect extra nuts for their foster mother as a thank you.", a: true }
+            ]
         },
         {
             title: "Fried Hornets",
             text: "The Japanese Giant Hornets are very dangerous insects, and they love to eat baby honeybees (larvas). Their sting is very poisonous, and one hornet can kill hundreds of bees in just a few minutes. Hornets attack bee hives, kill all the bees right away, and eat the babies. Poor honeybees are defenseless against these killers and are close to dying out in some areas. However, one kind of honeybee has found a way to defeat the hornets. Hornets cannot live in temperatures higher than 46° Celsius, but these special bees can handle up to 48° Celsius. These special honeybees wait until all the hornets are inside their hive. Then, all the bees start to shake their wings (flutter) together. This quickly raises the temperature inside the hive. Before the hornets realize what's happening, they all die because the temperature is too hot for them. Other types of honeybees are still victims, but these ones are safe.",
-            questions: [ { q: "The special honeybees defeat the hornets by raising the temperature inside the hive until the hornets die.", a: true } ]
+            questions: [ 
+                { q: "Japanese Giant Hornets love to eat adult honeybees but ignore the babies.", a: false },
+                { q: "One hornet can kill hundreds of bees in just a few minutes.", a: true },
+                { q: "Hornets can survive in temperatures up to 48° Celsius.", a: false },
+                { q: "The special honeybees defeat the hornets by raising the temperature inside the hive until the hornets die.", a: true },
+                { q: "The bees raise the temperature by shaking their wings together.", a: true },
+                { q: "All types of honeybees know how to use this heat defense method.", a: false }
+            ]
         },
         {
             title: "Greedy Gibbons",
             text: "It is usually very hard to catch gibbons (a type of monkey). But people in Indonesia have found a way to catch them easily by using their greed. They sell the gibbons to zoos and make good money. The local people make a hole in an empty coconut, put a banana inside it, and tie the coconut to a tree. Gibbons have a good sense of smell, so they come to get the banana. They put their small hand through the hole to grab the banana. Once they grab it, their hand becomes a fist, and the fist is too big to pull back out through the hole. They must let go of the banana to free their hand. But they are so greedy that they never let go of the banana. The local people then come and catch them easily, one by one, with the bananas in their fists, stuck inside the coconuts.",
-            questions: [ { q: "Gibbons are caught easily because they refuse to let go of the banana to free their hands.", a: true } ]
+            questions: [ 
+                { q: "People in Indonesia catch gibbons easily by using the animal's greed.", a: true },
+                { q: "The local people put an apple inside an empty coconut to attract the gibbons.", a: false },
+                { q: "Gibbons can smell the banana inside the coconut easily.", a: true },
+                { q: "Gibbons are caught easily because they refuse to let go of the banana to free their hands.", a: true },
+                { q: "A gibbon's hand becomes a fist when it grabs the banana.", a: true },
+                { q: "Gibbons quickly let go of the banana as soon as they see a human coming.", a: false }
+            ]
         },
         {
             title: "Grieving Animals",
             text: "Only two types of animals seem to know about death and hold a funeral for their friends. One is the elephant, and the other is the jaybird (a type of crow). When an elephant dies, the other elephants don't leave it. They cover the dead elephant with leaves and branches. They also stand around their dead friend and make crying sounds. When a jaybird dies, other jaybirds quickly tell all the nearby jaybirds. They all come together around the dead bird. They collect small sticks and leaves to cover their dead friend. They stop looking for food for twenty-four hours to stay with their friend and make different sounds to show their sadness. This ceremony is very similar to a human funeral.",
-            questions: [ { q: "When a jaybird dies, the other birds immediately fly away and look for a new feeding ground.", a: false } ]
+            questions: [ 
+                { q: "Elephants and jaybirds seem to hold funerals for their dead friends.", a: true },
+                { q: "Elephants cover a dead elephant with leaves and branches.", a: true },
+                { q: "Elephants run away quietly when one of their friends dies.", a: false },
+                { q: "When a jaybird dies, the other birds immediately fly away and look for a new feeding ground.", a: false },
+                { q: "Jaybirds collect small sticks and leaves to cover their dead friend.", a: true },
+                { q: "Jaybirds stop looking for food for twenty-four hours to show their sadness.", a: true }
+            ]
         },
         {
             title: "Hungry Sharks",
             text: "Scientists put a very hungry shark into a large tank. They put some small fish in the same tank. The shark quickly swam toward the small fish. But there was a problem: a clear plastic wall separated the shark from the fish. The shark kept attacking the fish but kept hitting its head on the wall. After two hours, it stopped trying and swam to its corner. Then, the scientists removed the wall. Even though the shark was still very hungry and there was no wall, it never tried to reach the fish again.",
-            questions: [ { q: "The shark eventually learned to jump over the plastic wall to catch the fish.", a: false } ]
+            questions: [ 
+                { q: "Scientists separated a hungry shark and small fish using a clear plastic wall.", a: true },
+                { q: "The shark successfully broke the plastic wall after two hours.", a: false },
+                { q: "The shark kept hitting its head against the wall while trying to attack the fish.", a: true },
+                { q: "The scientists eventually removed the plastic wall from the tank.", a: true },
+                { q: "The shark eventually learned to jump over the plastic wall to catch the fish.", a: false },
+                { q: "Even after the wall was removed, the shark never tried to attack the fish again.", a: true }
+            ]
         },
         {
             title: "Jumping Fleas",
             text: "Scientists put two dozen fleas into a hot, deep metal container. All of them naturally jumped out right away. Then, they took another two dozen fleas and put them into the same hot container. This time, as soon as they put them in, they covered the container with a glass plate. The fleas tried to jump to escape the hot bottom, but they kept hitting the glass. Soon, they learned to jump only as high as the glass ceiling. Later, the scientists removed the glass plate. But none of the fleas jumped higher than the height of the ceiling. They had set the limit for themselves. Although they could now escape, they only jumped as high as the old glass ceiling.",
-            questions: [ { q: "After the glass plate was removed, the fleas immediately jumped out of the container.", a: false } ]
+            questions: [ 
+                { q: "Two dozen fleas naturally jumped out of a hot metal container immediately.", a: true },
+                { q: "Scientists covered the second container of fleas with a heavy metal plate.", a: false },
+                { q: "The fleas kept hitting the glass ceiling when they tried to jump out.", a: true },
+                { q: "The fleas learned to jump only as high as the glass ceiling.", a: true },
+                { q: "After the glass plate was removed, the fleas immediately jumped out of the container.", a: false },
+                { q: "The fleas set a permanent height limit for themselves based on the old ceiling.", a: true }
+            ]
         },
         {
             title: "Lazy Koalas",
             text: "Everyone thinks that koalas love to eat eucalyptus leaves, but that's not really true. They are actually very lazy animals. They don't like these leaves, but instead of trying to find better-tasting leaves, they choose to stay in the eucalyptus trees and eat them. The eucalyptus trees did not like these animals, so over time, they developed a natural defense system. The leaves became toxic (poisonous). But the koalas slowly got used to the poison and kept eating them. When the koalas got older, they started losing their teeth because of the toxic leaves. Eventually, they died of hunger because they couldn't bite the leaves anymore.",
-            questions: [ { q: "Koalas lose their teeth when they get older because of the poisonous eucalyptus leaves.", a: true } ]
+            questions: [ 
+                { q: "Koalas actually love the taste of eucalyptus leaves more than any other food.", a: false },
+                { q: "Eucalyptus trees developed toxic leaves as a defense system over time.", a: true },
+                { q: "The koalas learned to find different, safer trees to eat from.", a: false },
+                { q: "Koalas slowly got used to the poison in the eucalyptus leaves.", a: true },
+                { q: "Koalas lose their teeth when they get older because of the poisonous eucalyptus leaves.", a: true },
+                { q: "The koalas eventually die of hunger because they cannot chew the leaves without teeth.", a: true }
+            ]
         },
         {
             title: "Merciful Wolves",
             text: "Wolves are known as fierce predators and are often seen as cruel killers. This can be true; a pack of wolves can kill many sheep very quickly. They are naturally brutal, and they sometimes even attack and kill their wounded friends within their own pack. However, they have one surprising quality. Wolves often fight other packs to control their territory. When one pack wins a fight, their leader does something unusual: instead of killing the losing pack’s orphan baby wolves (pups), the leader adopts them. The pups are quickly accepted into the new pack as if they were born there. Years later, one of these adopted pups might even become the leader of the pack. In contrast, human history shows that winners often cruelly kill the children of the defeated rulers. Wolves might be fierce, but they are certainly not killers of children.",
-            questions: [ { q: "When a wolf pack wins a fight for territory, they adopt the orphan pups of the losing pack.", a: true } ]
+            questions: [ 
+                { q: "A pack of wolves is naturally brutal and can even kill their own wounded friends.", a: true },
+                { q: "Wolves often fight with other packs to control territory.", a: true },
+                { q: "When a wolf pack wins a fight for territory, they adopt the orphan pups of the losing pack.", a: true },
+                { q: "The adopted pups are treated badly by the new pack.", a: false },
+                { q: "An adopted pup might eventually become the leader of the new pack.", a: true },
+                { q: "Human history shows that winners usually adopted the children of defeated rulers just like wolves.", a: false }
+            ]
         },
         {
             title: "Mother Instinct",
             text: "Recently, scientists found that the feeling known as \"mother instinct\" is simply caused by a hormone (a chemical in the body). They separated a mouse family into different cages. They starved the parents for twenty-four hours. They put water, food, and the baby mice the same distance from the parents' cages. When they opened the doors, the mother mouse ran to her babies first, before the water or food. The father mouse ran to the water first, then the food, and finally his babies. The next day, they did the experiment again. This time, they gave the mother a testosterone hormone injection and the father a prolactin hormone injection (the 'mother' hormone). When the doors opened, the father mouse ran to his babies first. The mother mouse ran to the water, then the food, and finally her babies. This proved that the mother instinct is a chemical reaction.",
-            questions: [ { q: "The experiment proved that 'mother instinct' is determined by learning, not by hormones.", a: false } ]
+            questions: [ 
+                { q: "Scientists found that 'mother instinct' is caused by a chemical reaction in the body.", a: true },
+                { q: "In the first test, the starved father mouse ran to his babies before getting water.", a: false },
+                { q: "In the first test, the starved mother mouse ran to her babies before getting water or food.", a: true },
+                { q: "The experiment proved that 'mother instinct' is determined by learning, not by hormones.", a: false },
+                { q: "Scientists gave the mother mouse a testosterone injection on the second day.", a: true },
+                { q: "On the second day, the father mouse (with prolactin) ran to his babies first.", a: true }
+            ]
         },
         {
             title: "Nasty Dolphins",
             text: "Most people think dolphins are nice animals. But actually, they can be cruel and mean. Unlike other animals, male dolphins sometimes have sex just for fun. They might chase female dolphins for up to 50 km and then force them to have sex. If a mother dolphin has a baby, she doesnt want sex because of her motherly feelings. If this happens, male dolphins sometimes catch and kill the baby dolphin. After that, they force the mother to have sex with them. Dolphins can also kill just for fun. They hunt the babies of sharks and kill them for no real reason.",
-            questions: [ { q: "Male dolphins only kill baby sharks when they need food to survive.", a: false } ]
+            questions: [ 
+                { q: "Dolphins are always nice and gentle animals.", a: false },
+                { q: "Male dolphins sometimes force female dolphins to have sex.", a: true },
+                { q: "A mother dolphin wants to have sex right after having a baby.", a: false },
+                { q: "Male dolphins sometimes kill baby dolphins so they can mate with the mother.", a: true },
+                { q: "Male dolphins only kill baby sharks when they need food to survive.", a: false },
+                { q: "Dolphins sometimes hunt and kill baby sharks just for fun.", a: true }
+            ]
         },
         {
             title: "Neighbor Lobsters",
             text: "Lobsters live alone and are not very friendly with each other. Male lobsters often fight to protect their territory (their land). They will even fight and kill each other for it. However, if a different animal or a predator comes to attack one lobster, the neighbor lobster quickly comes to help. If they chase the attacker away, the two lobsters become friends. They never fight over territory again until one of them dies. When one lobster dies, the other one automatically gets the dead lobster's territory. Other lobsters accept this.",
-            questions: [ { q: "If two lobsters fight off a predator together, they become friends and stop fighting over territory.", a: true } ]
+            questions: [ 
+                { q: "Lobsters live in large, friendly groups and share their territory.", a: false },
+                { q: "Male lobsters will fight and even kill each other to protect their land.", a: true },
+                { q: "If two lobsters fight off a predator together, they become friends and stop fighting over territory.", a: true },
+                { q: "The two lobsters remain friends until one of them dies.", a: true },
+                { q: "When one friendly lobster dies, another random lobster fights for its territory.", a: false },
+                { q: "Other lobsters accept when a surviving friend takes over a dead lobster's territory.", a: true }
+            ]
         },
         {
             title: "Nepotist Hyenas",
             text: "Hyenas are scavengers that eat the leftovers from predators in Africa. Unlike many animals, female hyenas are the leaders of the pack. The powerful alpha female guides the group, and everyone must obey her. Females are dominant due to their higher strength and aggression. Males accept their lower roles, knowing that the alpha female always favors her own children over anyone else, no matter what they achieve. This behavior shows the existence of nepotism (family favouritism) in the animal world. When working together under the female leader, a large group of hyenas can take food from even big cats like lions. If a predator resists, the hyenas will attack and may even kill it.",
-            questions: [ { q: "In a hyena pack, the strongest male is always the leader of the group.", a: false } ]
+            questions: [ 
+                { q: "Female hyenas are the leaders of their packs.", a: true },
+                { q: "Females are dominant because they are stronger and more aggressive than males.", a: true },
+                { q: "In a hyena pack, the strongest male is always the leader of the group.", a: false },
+                { q: "The alpha female always favors her own children over other members of the pack.", a: true },
+                { q: "Male hyenas fight the alpha female constantly to become leaders.", a: false },
+                { q: "A large group of hyenas can steal food from big cats like lions.", a: true }
+            ]
         },
         {
             title: "Selfish Cuckoos",
             text: "Cuckoos are interesting birds because they never build a nest and don't take care of their young. When it's time for a female cuckoo to lay an egg, she finds a nest with eggs already in it, pushes one of the owner's eggs out, lays her own egg, and flies away. The mother of the nest keeps warming the eggs without noticing the new one. As soon as the cuckoo chick hatches, it throws the other baby birds out of the nest. This way, it gets more food from the mother bird. Once the cuckoo learns to fly, it leaves the nest to find other cuckoos to mate with. Because of cuckoos, the number of other birds in some areas has decreased a lot. The only good thing is that a cuckoo can only lay one egg a year.",
-            questions: [ { q: "The female cuckoo builds a strong nest to protect her single egg every year.", a: false } ]
+            questions: [ 
+                { q: "Cuckoos build very strong and elaborate nests for their young.", a: false },
+                { q: "A female cuckoo lays her egg in the nest of another bird.", a: true },
+                { q: "The female cuckoo builds a strong nest to protect her single egg every year.", a: false },
+                { q: "The cuckoo chick throws the other baby birds out of the nest after it hatches.", a: true },
+                { q: "The cuckoo chick gets less food because it has to share with the owner's babies.", a: false },
+                { q: "A female cuckoo only lays one egg per year.", a: true }
+            ]
         },
         {
             title: "Skunk Marker",
             text: "Everyone knows that when skunks are attacked, they spray a liquid. This liquid smells terrible and can be smelled from as far as 800 meters away. Skunks are predators themselves, but they are also eaten by animals like the puma, coyote, and fox. However, experienced predators avoid skunks, even when they are very hungry. They know that eating a skunk will cause them to starve to death. The skunk's smell itself is not deadly. However, the smell is so strong and stays for months that all other prey can smell the predator from far away and escape. Because the predator cannot catch any food, it eventually dies of hunger. Just like experienced hunters avoid skunks, experienced people often avoid harmful or \"toxic\" people.",
-            questions: [ { q: "Predators avoid eating skunks because the smell prevents them from hunting other animals later.", a: true } ]
+            questions: [ 
+                { q: "The terrible smell of a skunk's spray can be noticed from 800 meters away.", a: true },
+                { q: "Skunks are herbivores and never hunt other animals.", a: false },
+                { q: "The skunk's spray liquid is highly deadly to predators.", a: false },
+                { q: "Predators avoid eating skunks because the smell prevents them from hunting other animals later.", a: true },
+                { q: "The skunk smell disappears completely after a few hours.", a: false },
+                { q: "A predator that eats a skunk usually dies of hunger because all its prey can smell it coming.", a: true }
+            ]
         },
         {
             title: "Slave Trader Ants",
             text: "A very mean kind of ant lives in the Amazon. They have long, sharp teeth outside their mouths, which they use like spears to kill enemies. But they cannot chew their own food. To solve this, they developed a strange method. They attack the nests of smaller ants and kill all of them. Then, they take the smaller ants' eggs back to their own nest. When the eggs hatch, the new ants, because of their natural feeling (instinct), go out, collect food, bring it back, and chew it to feed their masters (the killer ants). As soon as the killer ants are strong again, they kill all of their slave ants and look for a new nest to raid.",
-            questions: [ { q: "The Amazon killer ants kidnap the eggs of smaller ants to raise them as slaves to chew their food.", a: true } ]
+            questions: [ 
+                { q: "The Amazon killer ants have long teeth outside their mouths that act like spears.", a: true },
+                { q: "The killer ants are excellent at chewing their own food.", a: false },
+                { q: "The Amazon killer ants kidnap the eggs of smaller ants to raise them as slaves to chew their food.", a: true },
+                { q: "The newly hatched slave ants instinctively collect and chew food for their masters.", a: true },
+                { q: "The killer ants keep their slave ants alive forever out of gratitude.", a: false },
+                { q: "After killing their slaves, the strong ants go look for a new nest to attack.", a: true }
+            ]
         },
         {
             title: "Smart Flies",
             text: "Everyone knows that bees are smarter than flies. But this didn't help them in one experiment. Scientists put twelve bees into a bottle in a dark room. The bottle's opening pointed towards the dark, but the bottom pointed towards the sun. The bees thought the sun was the exit, so they flew toward it and hit the bottom of the bottle. They kept doing this until they all died. Next, they put twelve flies in the same bottle. The flies flew in every direction. Soon, one fly found the opening and escaped. The rest of the flies followed it and escaped too. The less smart flies survived, but the smarter bees died.",
-            questions: [ { q: "The flies escaped the bottle because they blindly flew in every direction instead of just toward the light.", a: true } ]
+            questions: [ 
+                { q: "Scientists placed bees in a bottle with the bottom pointing toward the sun.", a: true },
+                { q: "The bees survived because they easily found the opening of the bottle in the dark.", a: false },
+                { q: "The flies escaped the bottle because they blindly flew in every direction instead of just toward the light.", a: true },
+                { q: "Only one fly escaped, and the rest died in the bottle.", a: false },
+                { q: "The bees kept hitting the bottom of the bottle until they died.", a: true },
+                { q: "This experiment proved that the smarter animals always survive longer.", a: false }
+            ]
         },
         {
             title: "Thief Magpies",
             text: "For centuries, people have used animals for many things: for food (cows, sheep), for work (horses, oxen), or for protection (dogs). But there are some exceptions. Perhaps the most interesting is the magpie. Magpies are a type of crow that live in forests. They are attracted to things that are shiny and glittering. They pick up these objects and take them to their nests. In the Middle Ages, some people gypsies discovered this. They began to train the magpies to steal gold and jewelry from houses with open windows. Even today, some people keep magpies for the same reason.",
-            questions: [ { q: "Magpies were trained by humans to steal shiny objects like gold and jewelry.", a: true } ]
+            questions: [ 
+                { q: "Magpies are a type of crow that naturally live in forests.", a: true },
+                { q: "Magpies are naturally afraid of shiny and glittering objects.", a: false },
+                { q: "Magpies naturally pick up shiny objects and take them to their nests.", a: true },
+                { q: "Magpies were trained by humans to steal shiny objects like gold and jewelry.", a: true },
+                { q: "Gypsies in the Middle Ages trained magpies to steal from houses with open windows.", a: true },
+                { q: "No one in the modern world uses magpies for stealing anymore.", a: false }
+            ]
         },
         {
             title: "Trader Gorillas",
             text: "There were four gorillas in separate cages in a room. Every morning, a keeper gave them tokens. In the afternoon, another keeper gave them cucumbers and took their tokens. One day, the first gorilla got grapes, but the other three still got cucumbers. The next day, the three gorillas refused to give their tokens for a cucumber. They only gave them for grapes. Finally, the keeper gave the first gorilla a banana, and the others got grapes. This time, they would not give their tokens for grapes. They demanded a banana for their tokens. They had learned to trade their tokens for better food.",
-            questions: [ { q: "The gorillas refused to hand over their tokens when they saw another gorilla receiving better food.", a: true } ]
+            questions: [ 
+                { q: "The keeper initially gave all four gorillas tokens every morning.", a: true },
+                { q: "The keeper exchanged the tokens for bananas on the first day.", a: false },
+                { q: "The gorillas refused to hand over their tokens when they saw another gorilla receiving better food.", a: true },
+                { q: "The three gorillas accepted cucumbers after seeing the first gorilla get grapes.", a: false },
+                { q: "When the first gorilla received a banana, the other three demanded bananas too.", a: true },
+                { q: "The gorillas demonstrated an understanding of trading tokens for better food value.", a: true }
+            ]
         },
         {
             title: "Tricky Penguins",
             text: "Because most penguins live on icy ground, small pebble stones are very important to them. They need these stones to build their nests. Without a nest, the females cannot lay eggs, so having a nest is vital. Penguins are monogamous, which means they only have one partner. Some clever female penguins have learned to trick the young, single male penguins while their partners are away. These male penguins bring the females pebble stones and expect sex in return. However, the tricky females take the stones and then refuse to have sex with the males.",
-            questions: [ { q: "Female penguins trick young males to get pebble stones, which are vital for building nests.", a: true } ]
+            questions: [ 
+                { q: "Penguins use small pebble stones to build their nests.", a: true },
+                { q: "Having a nest is completely optional and unnecessary for female penguins to lay eggs.", a: false },
+                { q: "Penguins are monogamous, meaning they only have one partner.", a: true },
+                { q: "Female penguins trick young males to get pebble stones, which are vital for building nests.", a: true },
+                { q: "The male penguins bring stones to the females expecting extra food in return.", a: false },
+                { q: "The tricky females take the stones and successfully mate with the young males.", a: false }
+            ]
         },
         {
             title: "Urbanized Raccoons",
             text: "Living in cities demands more problem-solving skills than living in nature, and this applies to raccoons too. Many raccoons have settled near people and found an easy way to eat: they get food from trash cans instead of struggling to hunt. They have learned how to open the lids to reach the food inside. Scientists decided to compare the skills of city raccoons and forest raccoons. They brought some hungry forest raccoons to the city. The forest raccoons quickly found the trash cans full of food. However, no matter how hard they tried, they could not open the lids. They soon gave up and rushed back to the nearby forest, hoping they could find food there. This experiment clearly showed that living in the city forces raccoons to develop new skills to solve daily problems.",
-            questions: [ { q: "The experiment showed that forest raccoons are much better at opening trash cans than city raccoons.", a: false } ]
+            questions: [ 
+                { q: "Living in a city requires fewer problem-solving skills than living in nature.", a: false },
+                { q: "City raccoons have learned how to open trash cans to get food easily.", a: true },
+                { q: "The scientists brought city raccoons to the forest to test them.", a: false },
+                { q: "The experiment showed that forest raccoons are much better at opening trash cans than city raccoons.", a: false },
+                { q: "The forest raccoons could easily find the trash cans but could not open the lids.", a: true },
+                { q: "The forest raccoons gave up and returned to the forest.", a: true }
+            ]
         },
         {
             title: "Vultures and Group Work",
             text: "Most people dislike vultures, but they are important for our environment. They help make dead animals disappear so they don't spread diseases. In places with few vultures, dead animals rot and spread bacteria that make many people sick and even die. Vultures can eat a large dead animal, like a zebra or giraffe, in less than 3 hours. The older vultures eat the soft parts (organs), and the young vultures eat the bones. While they eat, the strongest vultures guard the group from other scavengers, like jackals and hyenas. When the main group has finished eating, the guards eat their share. When they are done, the dead animal is completely gone from the environment.",
-            questions: [ { q: "Vultures spread diseases by leaving the bones of dead animals to rot in the sun.", a: false } ]
+            questions: [ 
+                { q: "Vultures help the environment by making dead animals disappear.", a: true },
+                { q: "Without vultures, rotting dead animals spread bacteria and diseases.", a: true },
+                { q: "Vultures can eat a large animal like a zebra in about three days.", a: false },
+                { q: "Vultures spread diseases by leaving the bones of dead animals to rot in the sun.", a: false },
+                { q: "Young vultures eat the soft organs, while old vultures eat the hard bones.", a: false },
+                { q: "The strongest vultures guard the group from other scavengers while the main group eats.", a: true }
+            ]
         }
     ];
 
@@ -305,7 +562,7 @@
                 return `
                     <div class="card" onclick="openQuizMode(${i})" style="cursor:pointer; border-left: 5px solid #e056fd;">
                         <div class="card-title">${item.title}</div>
-                        <div style="font-size:14px; color:#aaa; margin-top:5px;">Tap to start True/False Quiz 🧠</div>
+                        <div style="font-size:14px; color:#aaa; margin-top:5px;">Tap to start True/False Quiz (6 Questions) 🧠</div>
                     </div>`;
             }
         }).join('');
@@ -351,54 +608,64 @@
 
     function openQuizMode(i) {
         currentDataIndex = i;
+        questionsAnsweredInCurrentQuiz = 0; // Reset question counter
         const item = db[i];
+        
         modal.style.display = "block";
         document.getElementById('story-title').innerText = item.title + " Quiz";
         document.getElementById('view-learn').style.display = 'none';
         document.getElementById('view-quiz').style.display = 'block';
+        document.getElementById('quiz-next-btn').style.display = 'none'; // Hide next button initially
         player.pause(); 
         
+        // Render all 6 questions
         document.getElementById('quiz-area').innerHTML = item.questions.map((q, idx) => `
             <div class="quiz-q">
-                <div style="font-weight:bold; margin-bottom:15px; font-size: 20px; line-height: 1.4; color: #fff;">Q: ${q.q}</div>
+                <div style="font-weight:bold; margin-bottom:15px; font-size: 20px; line-height: 1.4; color: #fff;">Q${idx + 1}: ${q.q}</div>
                 <div style="display:flex; gap:10px;">
                     <button class="btn-tf btn-true" onclick="checkAnswer(this, ${q.a}, true)">TRUE</button>
                     <button class="btn-tf btn-false" onclick="checkAnswer(this, ${q.a}, false)">FALSE</button>
                 </div>
                 <div class="feedback"></div>
-                <button class="btn-next" onclick="nextQuizQuestion()">Next Animal ➔</button>
             </div>`).join('');
     }
 
     function checkAnswer(btn, ans, userAns) {
         const quizBox = btn.parentElement.parentElement;
         const fb = quizBox.querySelector('.feedback');
-        const nextBtn = quizBox.querySelector('.btn-next');
         
         if (ans === userAns) { 
-            fb.innerHTML = "<span style='color: #39ff14;'>✅ CORRECT! Good job.</span>"; 
+            fb.innerHTML = "<span style='color: #39ff14;'>✅ CORRECT!</span>"; 
         } else { 
-            fb.innerHTML = "<span style='color: #ff0033;'>❌ WRONG! Keep practicing!</span>"; 
+            fb.innerHTML = "<span style='color: #ff0033;'>❌ WRONG!</span>"; 
         }
         
-        // Disable buttons after answering
+        // Disable buttons after answering this specific question
         const buttons = quizBox.querySelectorAll('.btn-tf');
         buttons.forEach(b => { b.disabled = true; b.style.opacity = '0.5'; b.style.cursor = 'not-allowed'; });
         
-        // Show the next button
-        nextBtn.style.display = "block";
+        // Track that a question was answered
+        questionsAnsweredInCurrentQuiz++;
+        
+        // If all 6 questions are answered, show the "Next Animal" button at the bottom
+        if (questionsAnsweredInCurrentQuiz === db[currentDataIndex].questions.length) {
+            document.getElementById('quiz-next-btn').style.display = "block";
+        }
     }
 
     function nextQuizQuestion() {
         if (currentDataIndex + 1 < db.length) {
             openQuizMode(currentDataIndex + 1);
+            // Scroll to top of modal for the new quiz
+            document.getElementById('modal').scrollTop = 0;
         } else {
             document.getElementById('story-title').innerText = "Awesome Job!";
+            document.getElementById('quiz-next-btn').style.display = "none";
             document.getElementById('quiz-area').innerHTML = `
                 <div style="text-align:center; padding: 40px;">
                     <div style="font-size: 60px; margin-bottom: 20px;">🏆</div>
                     <div style="font-size: 32px; color: #39ff14; font-weight: 900;">QUIZ COMPLETE!</div>
-                    <div style="color: #ccc; margin-top: 15px; font-size: 20px;">You've finished all the animal stories.</div>
+                    <div style="color: #ccc; margin-top: 15px; font-size: 20px;">You've finished all 216 questions!</div>
                     <button onclick="closeModal()" style="margin-top: 40px; padding: 15px 40px; background: #e056fd; color: white; border: none; border-radius: 8px; font-size: 20px; font-weight: bold; cursor: pointer; transition: transform 0.1s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">Back to Menu</button>
                 </div>`;
         }
