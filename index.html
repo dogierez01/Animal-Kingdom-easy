@@ -141,9 +141,6 @@
         },
         {
             title: "Boiling Frogs",
-            // The screenshot showed a double space, overriding it precisely here!
-            audioFemale: "Boiling Frogs  female.wav",
-            audioMale: "Boiling Frogs  male.wav", 
             text: "In one experiment, scientists took twelve frogs and put them into a container of water that was 50° Celsius (very hot). As soon as the frogs felt the hot water, they jumped out immediately to save themselves. Next, the scientists took another twelve frogs and put them into warm water at 30° Celsius. The frogs swam around happily. However, the scientists slowly heated the water, increasing the temperature by 5° Celsius every half hour. After two hours, the water reached 50° Celsius, but none of the frogs jumped out, and they all died in the hot water. They could not feel the small, slow increase in the water's temperature.",
             questions: [ 
                 { q: "The frogs placed in 50° Celsius water stayed inside and died.", a: false },
@@ -180,7 +177,6 @@
         },
         {
             title: "Chaotic Seals and Organized Dolphins",
-            // You named it shorter than the title, so overriding here:
             audioFemale: "Chaotic Seals female.wav", 
             audioMale: "Chaotic Seals male.wav",
             text: "Seals and dolphins eat the same food and live in the same place, but they hunt differently. Seals live together but are selfish. When they see many fish, they jump in and try to catch as much as possible. This action makes the fish scatter, so the seals only catch a few. Dolphins usually live alone, but they work together perfectly to hunt. When they find fish, they swim in circles around them so the fish can't escape. The weak dolphins eat first. Then, they switch places with the circling dolphins so everyone gets their share. They continue this team effort until all the fish are eaten. If seals learned to work together like dolphins, they would catch much more food.",
@@ -399,7 +395,6 @@
         },
         {
             title: "Nasty Dolphins",
-            // You confirmed this is an mp3, overriding here!
             audioFemale: "Nasty Dolphins female.mp3",
             audioMale: "Nasty Dolphins male.mp3",
             text: "Most people think dolphins are nice animals. But actually, they can be cruel and mean. Unlike other animals, male dolphins sometimes have sex just for fun. They might chase female dolphins for up to 50 km and then force them to have sex. If a mother dolphin has a baby, she doesnt want sex because of her motherly feelings. If this happens, male dolphins sometimes catch and kill the baby dolphin. After that, they force the mother to have sex with them. Dolphins can also kill just for fun. They hunt the babies of sharks and kill them for no real reason.",
@@ -587,17 +582,16 @@
         
         let fileName = "";
         
-        // Use exact hardcoded overrides for the specific broken ones!
         if (gender === 'female' && item.audioFemale) {
             fileName = item.audioFemale;
         } else if (gender === 'male' && item.audioMale) {
             fileName = item.audioMale;
         } else {
-            // For the normal ones, just take the perfectly capitalized Title + " gender.wav"
+            // Uses exact Title Capitalization (e.g., "Civil Engineer Beavers female.wav")
             fileName = item.title + " " + gender + ".wav";
         }
         
-        // Stop double encoding! If the file already has "%" in it, just stick it on the end.
+        // This stops the code from adding extra encoding if it's already encoded in the DB
         let finalUrl = "";
         if (fileName.includes("%")) {
             finalUrl = BASE_URL + fileName;
